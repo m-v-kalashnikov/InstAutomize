@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from os import environ as environment
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -17,15 +18,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
+# TODO: see on setting of NGINX
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=e&u(*4rj-e-r)12)vh40k$_)8fdmch!2!*7(i3+l(u=_g_0wa'
+SECRET_KEY = environment['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = environment['DEBUG']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = environment['DJANGO_ALLOWED_HOSTS'].split(' ')
 
 
 # Application definition
@@ -37,11 +39,103 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    'graphql_auth',
+    'django_filters',
+
+    'users.apps.UsersConfig',
 ]
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+GRAPHENE = {
+    'SCHEMA': 'backend.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    'graphql_auth.backends.GraphQLAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+GRAPHQL_JWT = {
+    'JWT_VERIFY_EXPIRATION': True,
+
+    # optional
+    'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
+    'JWT_ALLOW_ANY_CLASSES': [
+        'graphql_auth.mutations.Register',
+        'graphql_auth.mutations.VerifyAccount',
+        'graphql_auth.mutations.ResendActivationEmail',
+        'graphql_auth.mutations.SendPasswordResetEmail',
+        'graphql_auth.mutations.PasswordReset',
+        'graphql_auth.mutations.ObtainJSONWebToken',
+        'graphql_auth.mutations.VerifyToken',
+        'graphql_auth.mutations.RefreshToken',
+        'graphql_auth.mutations.RevokeToken',
+        'graphql_auth.mutations.VerifySecondaryEmail',
+    ],
+}
+
+GRAPHQL_AUTH = {
+    'LOGIN_ALLOWED_FIELDS': ['email', 'username'],
+    'ALLOW_LOGIN_NOT_VERIFIED': False,
+    'REGISTER_MUTATION_FIELDS': [
+        'email',
+        'username',
+        'instagram_login',
+        'instagram_password'
+    ],
+    'UPDATE_MUTATION_FIELDS': [
+        'first_name',
+        'last_name',
+        'instagram_login',
+        'instagram_password'
+    ],
+    'USER_NODE_FILTER_FIELDS': {
+        'instagram_login': [
+            'exact',
+            'icontains',
+            'istartswith'
+        ],
+        'instagram_password': [
+            'exact',
+            'icontains',
+            'istartswith'
+        ]
+    }
+    # TODO: Add and configure 'EMAIL_ASYNC_TASK'
+}
+
+SITE_ID = 1
+
+EMAIL_BACKEND_DEV = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_BACKEND_PROD = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_BACKEND = EMAIL_BACKEND_DEV if DEBUG else EMAIL_BACKEND_PROD
+
+EMAIL_FILE_PATH = BASE_DIR / 'logging/email_out/'
+
+EMAIL_HOST = 'smtp.eu.mailgun.org'
+
+EMAIL_USE_TLS = True
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = environment['EMAIL_LOGIN']
+
+EMAIL_HOST_PASSWORD = environment['EMAIL_PASSWORD']
+
+DEFAULT_FROM_EMAIL = environment['DEFAULT_FROM_EMAIL']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -54,7 +148,9 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,8 +171,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': environment['SQL_ENGINE'],
+        'NAME': environment['SQL_DATABASE'],
+        'USER': environment['SQL_USER'],
+        'PASSWORD': environment['SQL_PASSWORD'],
+        'HOST': environment['SQL_HOST'],
+        'PORT': environment['SQL_PORT'],
     }
 }
 
@@ -103,9 +203,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Kiev'
 
 USE_I18N = True
 
@@ -117,4 +217,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/mediafiles/'
+MEDIA_ROOT = BASE_DIR / 'mediafiles'
