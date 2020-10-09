@@ -21,7 +21,7 @@ ADD Pipfile* /code/
 RUN set -ex && pipenv install --deploy --system
 
 # copy(add) script
-COPY ./backend/scripts/start.sh /
+COPY ./backend/scripts/start.dev.sh /
 
 # copy(add) project
 ADD . /code/
