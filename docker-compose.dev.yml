@@ -29,10 +29,12 @@ services:
   client:
     container_name: client-dev
     build:
-      context: ./frontend/inst-automatization
+      context: ./frontend
     volumes:
-      - './frontend/inst-automatization:/app/:ro'
       - '/app/node_modules'
+      - './frontend:/app'
+    ports:
+      - '4200:4200'
     networks:
       - client-server-nginx
     depends_on:

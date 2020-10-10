@@ -7,6 +7,10 @@ docker rm $(docker ps --filter=status=exited --filter=status=created -q)
 
 ```
 
+```
+docker run --rm -it -v /home/michael/PycharmProjects/InstAutomize/frontend/:/code node:14.3.0-alpine /bin/sh
+```
+
 Change permissions
 
 ```bash
