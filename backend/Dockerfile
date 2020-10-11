@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.8.6-alpine
+FROM python:3.9.0-alpine
 
 # set work directory
 RUN mkdir /code
