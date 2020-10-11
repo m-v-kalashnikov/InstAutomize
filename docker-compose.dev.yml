@@ -33,8 +33,8 @@ services:
     volumes:
       - '/app/node_modules'
       - './frontend:/app'
-    ports:
-      - '4200:4200'
+    expose:
+      - 4200
     networks:
       - client-server-nginx
     depends_on:
