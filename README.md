@@ -11,7 +11,7 @@ Finally, install `docker-compose` by following the Linux instructions found [her
 
 Make sure that docker is correctly configured on your machine by running the following command:
 
-```
+```shell script
 $ docker run hello-world
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
@@ -44,7 +44,7 @@ For more examples and ideas, visit:
 
 If you have used docker previously, you may want to remove any old or unused images. Do this with the following commands: 
 
-```bash
+```shell script
 $ docker system prune
 $ docker rmi $(docker images -f "dangling=true" -q)
 $ docker rmi $(docker images -a -q)

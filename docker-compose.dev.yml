@@ -3,7 +3,7 @@ services:
 
   database:
     container_name: database-dev
-    image: library/postgres:12.4-alpine
+    image: library/postgres:13.0-alpine
     env_file:
       - ./.env.dev.db
     networks:
